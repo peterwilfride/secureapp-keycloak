@@ -1,0 +1,10 @@
+server:
+  port: 9000
+
+myKeycloak:
+  admin-client-id: ${ADMIN_CLIENT_ID}
+  admin-client-secret: ${ADMIN_CLIENT_SECRET}
+  admin-grant-type: ${ADMIN_GRANT_TYPE}
+  client-id: ${CLIENT_ID}
+  client-secret: ${CLIENT_SECRET}
+  grant-type: ${GRANT_TYPE}
