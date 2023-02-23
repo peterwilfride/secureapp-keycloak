@@ -1,32 +1,31 @@
 package com.keycloak.auth.secureapp.controller;
 
+import com.keycloak.auth.secureapp.model.GroupRepresentation;
+import com.keycloak.auth.secureapp.model.UserRepresentationalResponse;
+import com.keycloak.auth.secureapp.service.GroupsKeycloakService;
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/admin/groups")
+@AllArgsConstructor
 public class GroupsController {
+    public final GroupsKeycloakService service;
+
     @GetMapping
-    public void getAllGroups() {
-        // GET http://localhost:28080/auth/admin/realms/master/groups
+    public GroupRepresentation[] getAllGroups() {
+        return service.getAllGroups();
     }
 
-    @GetMapping("/users/role")
-    public void getUsersByGroup() {
-        // GET http://localhost:28080/auth/admin/realms/master/groups/{group_id}/members
+    @GetMapping("{id}/users")
+    public UserRepresentationalResponse[] getUsersByGroup(@PathVariable UUID id) {
+        return service.getUsersByGroup(id);
     }
 
-    @GetMapping(path = "/{id}")
-    public void getGropusByUserId() {
-        // GET http://localhost:28080/auth/admin/realms/master/users/{user_id}/groups
-    }
-
-    @PutMapping(path = "/{id}")
-    public void addGroupByUserId() {
-        // PUT http://localhost:28080/auth/admin/realms/master/users/{user_id}/groups/{group_id}
-    }
-
-    @DeleteMapping(path = "/{id}")
-    public void removeGroupByUserId() {
-        // DELETE http://localhost:28080/auth/admin/realms/master/users/{user_id}/groups/{group_id}
+    @GetMapping(path = "/users/{id}")
+    public GroupRepresentation[] getGropsByUserId(@PathVariable UUID id) {
+        return service.getGroupsByUserId(id);
     }
 }

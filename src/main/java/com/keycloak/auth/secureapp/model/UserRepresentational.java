@@ -17,7 +17,16 @@ public class UserRepresentational {
     private boolean emailVerified;
     private String email;
     private boolean enabled;
-
-    // others
     private long createdTimestamp;
+
+    public UserRepresentationalResponse convert() {
+        UserRepresentationalResponse userRepresentationalResponse = new UserRepresentationalResponse();
+        userRepresentationalResponse.setId(this.id);
+        userRepresentationalResponse.setUsername(this.username);
+        userRepresentationalResponse.setFirstName(this.firstName);
+        userRepresentationalResponse.setLastName(this.lastName);
+        userRepresentationalResponse.setEmail(this.email);
+        userRepresentationalResponse.setCreatedTimestamp(this.createdTimestamp);
+        return userRepresentationalResponse;
+    }
 }
