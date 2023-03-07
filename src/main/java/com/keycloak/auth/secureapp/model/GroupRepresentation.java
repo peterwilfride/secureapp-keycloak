@@ -8,4 +8,6 @@ import java.util.UUID;
 public class GroupRepresentation {
     private UUID id;
     private String name;
+
+    //TODO: inserir atributo descriçao
 }
