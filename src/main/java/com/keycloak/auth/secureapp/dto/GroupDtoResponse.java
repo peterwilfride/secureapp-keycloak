@@ -1,11 +1,11 @@
-package com.keycloak.auth.secureapp.model;
+package com.keycloak.auth.secureapp.dto;
 
 import lombok.Data;
 
 import java.util.UUID;
 
 @Data
-public class RolesResponse {
+public class GroupDtoResponse {
     private UUID id;
     private String name;
 

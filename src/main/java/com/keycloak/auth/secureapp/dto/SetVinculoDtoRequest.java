@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 @Getter
 @Setter
-public class ChooseVinculoDTO {
+public class SetVinculoDtoRequest {
     private String refresh_token;
     private Long vinculo_id;
 }

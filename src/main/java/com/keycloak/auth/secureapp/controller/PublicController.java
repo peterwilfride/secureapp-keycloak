@@ -1,6 +1,7 @@
 package com.keycloak.auth.secureapp.controller;
 
-import com.keycloak.auth.secureapp.dto.LoginDTO;
+import com.keycloak.auth.secureapp.dto.LoginDtoRequest;
+import com.keycloak.auth.secureapp.dto.TokenResponse;
 import com.keycloak.auth.secureapp.model.*;
 import com.keycloak.auth.secureapp.service.PublicService;
 import lombok.AllArgsConstructor;
@@ -16,8 +17,8 @@ public class PublicController {
     private final PublicService service;
 
     @PostMapping("/login")
-    public ResponseEntity<ResponseToken> login(@RequestBody LoginDTO loginDTO) {
-        Optional<ResponseToken> tokenOpt = service.login(loginDTO);
+    public ResponseEntity<TokenResponse> login(@RequestBody LoginDtoRequest loginDTO) {
+        Optional<TokenResponse> tokenOpt = service.login(loginDTO);
         if (tokenOpt.isPresent()) {
             return ResponseEntity.ok().body(tokenOpt.get());
         }

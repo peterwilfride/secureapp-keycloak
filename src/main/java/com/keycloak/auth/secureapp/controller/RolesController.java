@@ -1,7 +1,7 @@
 package com.keycloak.auth.secureapp.controller;
 
-import com.keycloak.auth.secureapp.model.RolesResponse;
-import com.keycloak.auth.secureapp.model.UserRepresentationalResponse;
+import com.keycloak.auth.secureapp.dto.RoleDtoResponse;
+import com.keycloak.auth.secureapp.dto.UserRepresentationalResponse;
 import com.keycloak.auth.secureapp.service.RolesService;
 import com.keycloak.auth.secureapp.utils.ValidatorUUID;
 import lombok.AllArgsConstructor;
@@ -19,7 +19,7 @@ public class RolesController {
     private final ValidatorUUID validatorUUID;
 
     @GetMapping
-    public RolesResponse[] getAllRoles() {
+    public RoleDtoResponse[] getAllRoles() {
         return service.getAllRoles();
     }
 

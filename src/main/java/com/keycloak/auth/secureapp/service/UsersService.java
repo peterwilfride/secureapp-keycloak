@@ -1,6 +1,6 @@
 package com.keycloak.auth.secureapp.service;
 
-import com.keycloak.auth.secureapp.dto.UserDTO;
+import com.keycloak.auth.secureapp.dto.*;
 import com.keycloak.auth.secureapp.model.*;
 import com.keycloak.auth.secureapp.repostitory.UsersRepository;
 import lombok.AllArgsConstructor;
@@ -16,10 +16,10 @@ public class UsersService {
     private final RolesService rolesService;
     private final GroupsService groupsService;
 
-    public Boolean register(UserDTO userDTO) {
+    public Boolean register(UserDtoRequest userDTO) {
         // check if username already exists
-        Optional<UserRepresentational> user_email = repository.findByEmail(userDTO.getEmail());
-        Optional<UserRepresentational> user_username = repository.findByUsername(userDTO.getUsername());
+        Optional<UserRepresentationalRequest> user_email = repository.findByEmail(userDTO.getEmail());
+        Optional<UserRepresentationalRequest> user_username = repository.findByUsername(userDTO.getUsername());
 
         if (user_email.isPresent() || user_username.isPresent()) {
             return false;
@@ -30,7 +30,7 @@ public class UsersService {
         //TODO: na pagrn api checar se o cpf utilizado pertente a uma pessoa fisica
 
         // User data
-        UserRepresentational myUserRepresentational = new UserRepresentational();
+        UserRepresentationalRequest myUserRepresentational = new UserRepresentationalRequest();
         myUserRepresentational.setUsername(userDTO.getUsername());
         myUserRepresentational.setEmail(userDTO.getEmail());
         myUserRepresentational.setEmailVerified(false);
@@ -61,24 +61,42 @@ public class UsersService {
         return repository.findAll();
     }
 
-    public Optional<UserRepresentational> findById(UUID id) {
-        // TODO: metodo para converter UserRepresentational para UserRepresentationalResponse para os endpoints
-        return repository.findById(id);
+    public Optional<UserRepresentationalResponse> findById(UUID id) {
+        Optional<UserRepresentationalRequest> userOpt = repository.findById(id);
+
+        if (userOpt.isPresent()) {
+            UserRepresentationalRequest user = userOpt.get();
+            UserRepresentationalResponse userResponse = user.convert();
+            return Optional.ofNullable(userResponse);
+        }
+        return Optional.empty();
     }
 
-    public Optional<UserRepresentational> findByEmail(String email) {
-        // TODO: metodo para converter UserRepresentational para UserRepresentationalResponse para os endpoints
-        return repository.findByEmail(email);
+    public Optional<UserRepresentationalResponse> findByEmail(String email) {
+        Optional<UserRepresentationalRequest> userOpt = repository.findByEmail(email);
+
+        if (userOpt.isPresent()) {
+            UserRepresentationalRequest user = userOpt.get();
+            UserRepresentationalResponse userResponse = user.convert();
+            return Optional.ofNullable(userResponse);
+        }
+        return Optional.empty();
     }
 
-    public Optional<UserRepresentational> findByUsername(String username) {
-        // TODO: metodo para converter UserRepresentational para UserRepresentationalResponse para os endpoints
-        return repository.findByUsername(username);
+    public Optional<UserRepresentationalResponse> findByUsername(String username) {
+        Optional<UserRepresentationalRequest> userOpt = repository.findByUsername(username);
+
+        if (userOpt.isPresent()) {
+            UserRepresentationalRequest user = userOpt.get();
+            UserRepresentationalResponse userResponse = user.convert();
+            return Optional.ofNullable(userResponse);
+        }
+        return Optional.empty();
     }
 
-    public void update(UUID id, UserRepresentational user) {
+    public void update(UUID id, UserRepresentationalRequest user) {
         // FIXME: os serviços que usam findById vao usar diretamente do repositorio
-        Optional<UserRepresentational> userOpt = repository.findById(id);
+        Optional<UserRepresentationalRequest> userOpt = repository.findById(id);
 
         if (userOpt.isPresent()) {
             repository.update(id, user);
@@ -86,9 +104,9 @@ public class UsersService {
     }
 
     public void setVinculoId(Long vinculoId, String mockusername) {
-        Optional<UserRepresentational> userOpt = repository.findByUsername(mockusername);
+        Optional<UserRepresentationalRequest> userOpt = repository.findByUsername(mockusername);
         if (userOpt.isPresent()) {
-            UserRepresentational user = userOpt.get();
+            UserRepresentationalRequest user = userOpt.get();
             //user.setVinculoId(vinculoId);
             Map<String, List<String>> attr = user.getAttributes();
             attr.replace("vinculo_id", List.of(vinculoId.toString()));
@@ -97,33 +115,33 @@ public class UsersService {
     }
 
     public Boolean addRoleByUserId(UUID userId, UUID roleId) {
-        Optional<UserRepresentational> user = repository.findById(userId);
-        Optional<RolesResponse> role = rolesService.findById(roleId);
+        Optional<UserRepresentationalRequest> user = repository.findById(userId);
+        Optional<RoleDtoResponse> role = rolesService.findById(roleId);
 
         if (user.isPresent() && role.isPresent()){
-            RolesResponse[] roles = {role.get()};
+            RoleDtoResponse[] roles = {role.get()};
             return repository.addRoleByUserId(userId, roles);
         }
         return false;
     }
 
     public Boolean removeRoleByUserId(UUID userId, UUID roleId) {
-        Optional<UserRepresentational> user = repository.findById(userId);
-        Optional<RolesResponse> role = rolesService.findById(roleId);
+        Optional<UserRepresentationalRequest> user = repository.findById(userId);
+        Optional<RoleDtoResponse> role = rolesService.findById(roleId);
 
         if (user.isPresent() && role.isPresent()){
-            RolesResponse[] roles = {role.get()};
+            RoleDtoResponse[] roles = {role.get()};
             return repository.removeRoleByUserId(userId, roles);
         }
         return false;
     }
 
-    public Optional<RolesResponse[]> getRolesByUserId(UUID userId) {
-        Optional<UserRepresentational> user = repository.findById(userId);
+    public Optional<RoleDtoResponse[]> getRolesByUserId(UUID userId) {
+        Optional<UserRepresentationalRequest> user = repository.findById(userId);
 
         if (user.isPresent()) {
-            RolesResponse[] roles = repository.getRolesByUserId(userId);
-            RolesResponse[] rolesFiltered = rolesService.filter_from_blacklist(roles);
+            RoleDtoResponse[] roles = repository.getRolesByUserId(userId);
+            RoleDtoResponse[] rolesFiltered = rolesService.filter_from_blacklist(roles);
             return Optional.ofNullable(rolesFiltered);
         }
 
@@ -131,8 +149,8 @@ public class UsersService {
     }
 
     public Boolean addGroupByUserId(UUID userId, UUID groupId) {
-        Optional<UserRepresentational> user = repository.findById(userId);
-        Optional<GroupRepresentation> group = groupsService.findById(groupId);
+        Optional<UserRepresentationalRequest> user = repository.findById(userId);
+        Optional<GroupDtoResponse> group = groupsService.findById(groupId);
 
         if (user.isPresent() && group.isPresent()) {
             return repository.addGroupByUserId(userId, groupId);
@@ -141,8 +159,8 @@ public class UsersService {
     }
 
     public Boolean removeGroupByUserId(UUID userId, UUID groupId) {
-        Optional<UserRepresentational> user = repository.findById(userId);
-        Optional<GroupRepresentation> group = groupsService.findById(groupId);
+        Optional<UserRepresentationalRequest> user = repository.findById(userId);
+        Optional<GroupDtoResponse> group = groupsService.findById(groupId);
 
         if (user.isPresent() && group.isPresent()) {
             return repository.removeGroupByUserId(userId, groupId);
@@ -150,11 +168,11 @@ public class UsersService {
         return false;
     }
 
-    public Optional<GroupRepresentation[]> getGroupsByUserId(UUID id) {
-        Optional<UserRepresentational> user = repository.findById(id);
+    public Optional<GroupDtoResponse[]> getGroupsByUserId(UUID id) {
+        Optional<UserRepresentationalRequest> user = repository.findById(id);
 
         if (user.isPresent()) {
-            GroupRepresentation[] groups = repository.getGroupsByUserId(id);
+            GroupDtoResponse[] groups = repository.getGroupsByUserId(id);
             return Optional.ofNullable(groups);
         }
         return Optional.empty();

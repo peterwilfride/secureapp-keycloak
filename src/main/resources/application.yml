@@ -8,3 +8,11 @@ myKeycloak:
   client-id: ${CLIENT_ID}
   client-secret: ${CLIENT_SECRET}
   grant-type: ${GRANT_TYPE}
+  base-url: ${BASE_URL}
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://pagrn.imd.ufrn.br/keycloak/realms/master

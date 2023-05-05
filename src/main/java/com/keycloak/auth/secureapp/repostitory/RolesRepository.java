@@ -1,7 +1,8 @@
 package com.keycloak.auth.secureapp.repostitory;
 
-import com.keycloak.auth.secureapp.model.RolesResponse;
-import com.keycloak.auth.secureapp.model.UserRepresentationalResponse;
+import com.keycloak.auth.secureapp.dto.RoleDtoResponse;
+import com.keycloak.auth.secureapp.dto.UserRepresentationalResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
@@ -19,16 +20,19 @@ public class RolesRepository {
         this.adminRepository = adminRepository;
     }
 
-    public RolesResponse[] getAllRoles() {
+    @Value("${mykeycloak.base-url}")
+    private String base_url;
+
+    public RoleDtoResponse[] getAllRoles() {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(adminRepository.getAdminToken());
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         HttpEntity<?> httpEntity = new HttpEntity<>(headers);
 
-        ResponseEntity<RolesResponse[]> roles = template.exchange(
-                "http://localhost:28080/auth/admin/realms/master/roles",
-                HttpMethod.GET, httpEntity, RolesResponse[].class);
+        ResponseEntity<RoleDtoResponse[]> roles = template.exchange(
+                base_url + "/auth/admin/realms/master/roles",
+                HttpMethod.GET, httpEntity, RoleDtoResponse[].class);
 
         return roles.getBody();
     }
@@ -41,13 +45,13 @@ public class RolesRepository {
         HttpEntity<?> httpEntity = new HttpEntity<>(headers);
 
         ResponseEntity<UserRepresentationalResponse[]> users = template.exchange(
-                "http://localhost:28080/auth/admin/realms/master/roles/" + roleName + "/users",
+                base_url + "/auth/admin/realms/master/roles/" + roleName + "/users",
                 HttpMethod.GET, httpEntity, UserRepresentationalResponse[].class);
 
         return users.getBody();
     }
 
-    public Optional<RolesResponse> findById(UUID id) {
+    public Optional<RoleDtoResponse> findById(UUID id) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(adminRepository.getAdminToken());
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -55,9 +59,9 @@ public class RolesRepository {
         HttpEntity<?> httpEntity = new HttpEntity<>(headers);
 
         try {
-            ResponseEntity<RolesResponse> role = template.exchange(
-                "http://localhost:28080/auth/admin/realms/master/roles-by-id/"+id,
-                HttpMethod.GET, httpEntity, RolesResponse.class);
+            ResponseEntity<RoleDtoResponse> role = template.exchange(
+                base_url + "/auth/admin/realms/master/roles-by-id/" + id,
+                HttpMethod.GET, httpEntity, RoleDtoResponse.class);
             return Optional.ofNullable(role.getBody());
         } catch (final HttpClientErrorException e) {
             return Optional.empty();

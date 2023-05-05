@@ -1,9 +1,9 @@
-package com.keycloak.auth.secureapp.model;
+package com.keycloak.auth.secureapp.dto;
 
 import lombok.Data;
 
 @Data
-public class ResponseToken {
+public class TokenResponse {
     private String access_token;
     private String refresh_token;
     private String expires_in;

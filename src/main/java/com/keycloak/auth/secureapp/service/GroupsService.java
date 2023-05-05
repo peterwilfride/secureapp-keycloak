@@ -1,7 +1,7 @@
 package com.keycloak.auth.secureapp.service;
 
-import com.keycloak.auth.secureapp.model.GroupRepresentation;
-import com.keycloak.auth.secureapp.model.UserRepresentationalResponse;
+import com.keycloak.auth.secureapp.dto.GroupDtoResponse;
+import com.keycloak.auth.secureapp.dto.UserRepresentationalResponse;
 import com.keycloak.auth.secureapp.repostitory.GroupsRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,12 +14,12 @@ import java.util.UUID;
 public class GroupsService {
     private final GroupsRepository repository;
 
-    public GroupRepresentation[] getAllGroups() {
+    public GroupDtoResponse[] getAllGroups() {
         return repository.getAllGroups();
     }
 
     public Optional<UserRepresentationalResponse[]> getUsersByGroupId(UUID id) {
-        Optional<GroupRepresentation> group = repository.findById(id);
+        Optional<GroupDtoResponse> group = repository.findById(id);
 
         if (group.isPresent()) {
             UserRepresentationalResponse[] users = repository.getUsersByGroup(id);
@@ -28,7 +28,7 @@ public class GroupsService {
         return Optional.empty();
     }
 
-    public Optional<GroupRepresentation> findById(UUID id) {
+    public Optional<GroupDtoResponse> findById(UUID id) {
         return repository.findById(id);
     }
 }

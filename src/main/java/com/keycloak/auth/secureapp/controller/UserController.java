@@ -1,7 +1,6 @@
 package com.keycloak.auth.secureapp.controller;
 
-import com.keycloak.auth.secureapp.dto.UserDTO;
-import com.keycloak.auth.secureapp.model.*;
+import com.keycloak.auth.secureapp.dto.*;
 import com.keycloak.auth.secureapp.service.UsersService;
 import com.keycloak.auth.secureapp.utils.ValidatorUUID;
 import lombok.AllArgsConstructor;
@@ -24,8 +23,8 @@ public class UserController {
     }
 
     @GetMapping(params = {"id"})
-    public ResponseEntity<UserRepresentational> findById(@RequestParam UUID id) {
-        Optional<UserRepresentational> user = service.findById(id);
+    public ResponseEntity<UserRepresentationalResponse> findById(@RequestParam UUID id) {
+        Optional<UserRepresentationalResponse> user = service.findById(id);
         if (user.isPresent()) {
             return ResponseEntity.ok().body(user.get());
         }
@@ -33,8 +32,8 @@ public class UserController {
     }
 
     @GetMapping(params = {"username"})
-    public ResponseEntity<UserRepresentational> findByUsername(@RequestParam String username) {
-        Optional<UserRepresentational> user = service.findByUsername(username);
+    public ResponseEntity<UserRepresentationalResponse> findByUsername(@RequestParam String username) {
+        Optional<UserRepresentationalResponse> user = service.findByUsername(username);
         if (user.isPresent()) {
             return ResponseEntity.ok().body(user.get());
         }
@@ -42,8 +41,8 @@ public class UserController {
     }
 
     @GetMapping(params = {"email"})
-    public ResponseEntity<UserRepresentational> findByEmail(@RequestParam String email) {
-        Optional<UserRepresentational> user = service.findByEmail(email);
+    public ResponseEntity<UserRepresentationalResponse> findByEmail(@RequestParam String email) {
+        Optional<UserRepresentationalResponse> user = service.findByEmail(email);
         if (user.isPresent()) {
             return ResponseEntity.ok().body(user.get());
         }
@@ -51,7 +50,7 @@ public class UserController {
     }
 
     @PutMapping(path = {"/{id}"})
-    public void update(@PathVariable UUID id, @RequestBody UserRepresentational user) {
+    public void update(@PathVariable UUID id, @RequestBody UserRepresentationalRequest user) {
         //Optional<UserRepresentational> result = service.update(id, user);
         service.update(id, user);
         /*if (result.isPresent()) {
@@ -61,8 +60,8 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Boolean> register(@RequestBody UserDTO userDTO) {
-        Boolean user = service.register(userDTO);
+    public ResponseEntity<Boolean> register(@RequestBody UserDtoRequest userDtoRequest) {
+        Boolean user = service.register(userDtoRequest);
         if (user) {
             return ResponseEntity.status(201).body(true);
         }
@@ -71,12 +70,12 @@ public class UserController {
 
     // CRUD DE GROUPS
     @GetMapping("groups/{id}")
-    public ResponseEntity<GroupRepresentation[]> getGropsByUserId(@PathVariable UUID id) {
+    public ResponseEntity<GroupDtoResponse[]> getGropsByUserId(@PathVariable UUID id) {
         if (!validatorUUID.validate(id)) {
             ResponseEntity.badRequest().build();
         }
 
-        Optional<GroupRepresentation[]> groups = service.getGroupsByUserId(id);
+        Optional<GroupDtoResponse[]> groups = service.getGroupsByUserId(id);
         if (groups.isPresent()) {
             return ResponseEntity.ok(groups.get());
         } else {
@@ -113,14 +112,13 @@ public class UserController {
     }
 
     // CRUD DE ROLES
-
     @GetMapping(path = "roles/{id}")
-    public ResponseEntity<RolesResponse[]> getRolesByUserId(@PathVariable UUID id) {
+    public ResponseEntity<RoleDtoResponse[]> getRolesByUserId(@PathVariable UUID id) {
         if (!validatorUUID.validate(id)) {
             ResponseEntity.badRequest().build();
         }
 
-        Optional<RolesResponse[]> roles = service.getRolesByUserId(id);
+        Optional<RoleDtoResponse[]> roles = service.getRolesByUserId(id);
         if (roles.isPresent()) {
             return ResponseEntity.ok(roles.get());
         }

@@ -1,9 +1,9 @@
 package com.keycloak.auth.secureapp.repostitory;
 
-import com.keycloak.auth.secureapp.dto.ChooseVinculoDTO;
-import com.keycloak.auth.secureapp.model.LogoutRequest;
-import com.keycloak.auth.secureapp.model.LogoutResponse;
-import com.keycloak.auth.secureapp.model.ResponseToken;
+import com.keycloak.auth.secureapp.dto.SetVinculoDtoRequest;
+import com.keycloak.auth.secureapp.dto.LogoutDtoRequest;
+import com.keycloak.auth.secureapp.dto.LogoutDtoResponse;
+import com.keycloak.auth.secureapp.dto.TokenResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -28,8 +28,10 @@ public class AuthRepository {
     private String client_id;
     @Value("${mykeycloak.client-secret}")
     private String client_secret;
+    @Value("${mykeycloak.base-url}")
+    private String base_url;
 
-    public ResponseEntity<LogoutResponse> logout(LogoutRequest logoutRequest) {
+    public ResponseEntity<LogoutDtoResponse> logout(LogoutDtoRequest logoutRequest) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setBearerAuth(adminRepository.getAdminToken());
@@ -41,18 +43,18 @@ public class AuthRepository {
 
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(map,headers);
 
-        ResponseEntity<LogoutResponse> response = template.postForEntity(
-                "http://localhost:28080/auth/realms/master/protocol/openid-connect/logout",
-                httpEntity, LogoutResponse.class);
+        ResponseEntity<LogoutDtoResponse> response = template.postForEntity(
+                base_url + "/auth/realms/master/protocol/openid-connect/logout",
+                httpEntity, LogoutDtoResponse.class);
 
-        LogoutResponse res = new LogoutResponse();
+        LogoutDtoResponse res = new LogoutDtoResponse();
         if(response.getStatusCode().is2xxSuccessful()) {
             res.setMessage("Logged out successfully");
         }
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
-    public Optional<ResponseToken> setVinculo(ChooseVinculoDTO chooseVinculoDTO) {
+    public Optional<TokenResponse> setVinculo(SetVinculoDtoRequest chooseVinculoDTO) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setBearerAuth(adminRepository.getAdminToken());
@@ -66,9 +68,9 @@ public class AuthRepository {
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(userCredentials, headers);
 
         try {
-            ResponseEntity<ResponseToken> res = template.postForEntity(
-                    "http://localhost:28080/auth/realms/master/protocol/openid-connect/token",
-                    httpEntity, ResponseToken.class);
+            ResponseEntity<TokenResponse> res = template.postForEntity(
+                    base_url + "/auth/realms/master/protocol/openid-connect/token",
+                    httpEntity, TokenResponse.class);
             return Optional.ofNullable(res.getBody());
         } catch (final HttpClientErrorException e) {
             return Optional.empty();

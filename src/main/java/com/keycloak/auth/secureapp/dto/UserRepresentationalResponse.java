@@ -1,4 +1,4 @@
-package com.keycloak.auth.secureapp.model;
+package com.keycloak.auth.secureapp.dto;
 
 import lombok.Data;
 

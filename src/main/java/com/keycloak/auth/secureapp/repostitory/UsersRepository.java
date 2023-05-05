@@ -1,6 +1,10 @@
 package com.keycloak.auth.secureapp.repostitory;
 
-import com.keycloak.auth.secureapp.model.*;
+import com.keycloak.auth.secureapp.dto.GroupDtoResponse;
+import com.keycloak.auth.secureapp.dto.RoleDtoResponse;
+import com.keycloak.auth.secureapp.dto.UserRepresentationalRequest;
+import com.keycloak.auth.secureapp.dto.UserRepresentationalResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
@@ -18,30 +22,33 @@ public class UsersRepository {
         this.AdminRepository = AdminRepository;
     }
 
-    public HttpStatusCode create(UserRepresentational userRepresentational) {
+    @Value("${mykeycloak.base-url}")
+    private String base_url;
+
+    public HttpStatusCode create(UserRepresentationalRequest userRepresentational) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(AdminRepository.getAdminToken());
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<UserRepresentational> request = new HttpEntity<>(userRepresentational, headers);
+        HttpEntity<UserRepresentationalRequest> request = new HttpEntity<>(userRepresentational, headers);
 
         ResponseEntity<HttpStatusCode> res = template.exchange(
-                    "http://localhost:28080/auth/admin/realms/master/users",
+                base_url + "/admin/realms/master/users",
                     HttpMethod.POST, request, HttpStatusCode.class);
 
         return res.getStatusCode();
     }
 
-    public void update(UUID userId, UserRepresentational newuser) {
+    public void update(UUID userId, UserRepresentationalRequest newuser) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(AdminRepository.getAdminToken());
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<UserRepresentational> request = new HttpEntity<>(newuser, headers);
+        HttpEntity<UserRepresentationalRequest> request = new HttpEntity<>(newuser, headers);
 
-        ResponseEntity<UserRepresentational> user = template.exchange(
-                "http://localhost:28080/auth/admin/realms/master/users/"+userId,
-                HttpMethod.PUT, request, UserRepresentational.class);
+        ResponseEntity<UserRepresentationalRequest> user = template.exchange(
+                base_url + "/auth/admin/realms/master/users/" + userId,
+                HttpMethod.PUT, request, UserRepresentationalRequest.class);
     }
 
     public UserRepresentationalResponse[] findAll() {
@@ -49,16 +56,16 @@ public class UsersRepository {
         headers.setBearerAuth(AdminRepository.getAdminToken());
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<RolesResponse[]> httpEntity = new HttpEntity<>(headers);
+        HttpEntity<?> httpEntity = new HttpEntity<>(headers);
 
         ResponseEntity<UserRepresentationalResponse[]> users = template.exchange(
-                "http://localhost:28080/auth/admin/realms/master/users",
+                base_url + "/admin/realms/master/users",
                 HttpMethod.GET, httpEntity, UserRepresentationalResponse[].class);
 
         return users.getBody();
     }
 
-    public Optional<UserRepresentational> findById(UUID id) {
+    public Optional<UserRepresentationalRequest> findById(UUID id) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(AdminRepository.getAdminToken());
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -66,16 +73,16 @@ public class UsersRepository {
         HttpEntity<?> httpEntity = new HttpEntity<>(headers);
 
         try {
-            ResponseEntity<UserRepresentational> user = template.exchange(
-                    "http://localhost:28080/auth/admin/realms/master/users/" + id, HttpMethod.GET,
-                    httpEntity, UserRepresentational.class);
+            ResponseEntity<UserRepresentationalRequest> user = template.exchange(
+                    base_url + "/auth/admin/realms/master/users/" + id, HttpMethod.GET,
+                    httpEntity, UserRepresentationalRequest.class);
             return Optional.ofNullable(user.getBody());
         } catch (final HttpClientErrorException e) {
             return Optional.empty();
         }
     }
 
-    public Optional<UserRepresentational> findByEmail(String email) {
+    public Optional<UserRepresentationalRequest> findByEmail(String email) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(AdminRepository.getAdminToken());
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -83,9 +90,9 @@ public class UsersRepository {
         HttpEntity<?> httpEntity = new HttpEntity<>(headers);
 
         try {
-            ResponseEntity<UserRepresentational[]> user = template.exchange(
-                    "http://localhost:28080/auth/admin/realms/master/users?exact=true&email=" + email,
-                    HttpMethod.GET, httpEntity, UserRepresentational[].class);
+            ResponseEntity<UserRepresentationalRequest[]> user = template.exchange(
+                    base_url + "/auth/admin/realms/master/users?exact=true&email=" + email,
+                    HttpMethod.GET, httpEntity, UserRepresentationalRequest[].class);
             if (Arrays.asList(user.getBody()).isEmpty()) {
                 return Optional.empty();
             }
@@ -95,7 +102,7 @@ public class UsersRepository {
         }
     }
 
-    public Optional<UserRepresentational> findByUsername(String username) {
+    public Optional<UserRepresentationalRequest> findByUsername(String username) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(AdminRepository.getAdminToken());
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -103,9 +110,9 @@ public class UsersRepository {
         HttpEntity<?> httpEntity = new HttpEntity<>(headers);
 
         try {
-            ResponseEntity<UserRepresentational[]> user = template.exchange(
-                    "http://localhost:28080/auth/admin/realms/master/users?exact=true&username=" + username,
-                    HttpMethod.GET, httpEntity, UserRepresentational[].class);
+            ResponseEntity<UserRepresentationalRequest[]> user = template.exchange(
+                    base_url + "/auth/admin/realms/master/users?exact=true&username=" + username,
+                    HttpMethod.GET, httpEntity, UserRepresentationalRequest[].class);
             if (Arrays.asList(user.getBody()).isEmpty()) {
                 return Optional.empty();
             }
@@ -115,56 +122,56 @@ public class UsersRepository {
         }
     }
 
-    public RolesResponse[] getRolesByUserId(UUID userId) {
+    public RoleDtoResponse[] getRolesByUserId(UUID userId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(AdminRepository.getAdminToken());
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         HttpEntity<?> httpEntity = new HttpEntity<>(headers);
 
-        ResponseEntity<RolesResponse[]> roles = template.exchange(
-                "http://localhost:28080/auth/admin/realms/master/users/" + userId + "/role-mappings/realm",
-                HttpMethod.GET, httpEntity, RolesResponse[].class);
+        ResponseEntity<RoleDtoResponse[]> roles = template.exchange(
+                base_url + "/auth/admin/realms/master/users/" + userId + "/role-mappings/realm",
+                HttpMethod.GET, httpEntity, RoleDtoResponse[].class);
 
         return roles.getBody();
     }
 
-    public Boolean addRoleByUserId(UUID user_id, RolesResponse[] roles) {
+    public Boolean addRoleByUserId(UUID user_id, RoleDtoResponse[] roles) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(AdminRepository.getAdminToken());
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<RolesResponse[]> httpEntity = new HttpEntity<>(roles, headers);
+        HttpEntity<RoleDtoResponse[]> httpEntity = new HttpEntity<>(roles, headers);
         ResponseEntity<Void> res = template.exchange(
-                "http://localhost:28080/auth/admin/realms/master/users/" + user_id + "/role-mappings/realm",
+                base_url + "/auth/admin/realms/master/users/" + user_id + "/role-mappings/realm",
                 HttpMethod.POST, httpEntity, Void.class);
 
         return res.getStatusCode().is2xxSuccessful();
     }
 
-    public Boolean removeRoleByUserId(UUID user_id, RolesResponse[] roles) {
+    public Boolean removeRoleByUserId(UUID user_id, RoleDtoResponse[] roles) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(AdminRepository.getAdminToken());
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<RolesResponse[]> httpEntity = new HttpEntity<>(roles, headers);
+        HttpEntity<RoleDtoResponse[]> httpEntity = new HttpEntity<>(roles, headers);
         ResponseEntity<Void> res = template.exchange(
-                "http://localhost:28080/auth/admin/realms/master/users/" + user_id + "/role-mappings/realm",
+                base_url + "/auth/admin/realms/master/users/" + user_id + "/role-mappings/realm",
                 HttpMethod.DELETE, httpEntity, Void.class);
 
         return res.getStatusCode().is2xxSuccessful();
     }
 
-    public GroupRepresentation[] getGroupsByUserId(UUID userId) {
+    public GroupDtoResponse[] getGroupsByUserId(UUID userId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(AdminRepository.getAdminToken());
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         HttpEntity<?> httpEntity = new HttpEntity<>(headers);
 
-        ResponseEntity<GroupRepresentation[]> users = template.exchange(
-                "http://localhost:28080/auth/admin/realms/master/users/" + userId + "/groups",
-                HttpMethod.GET, httpEntity, GroupRepresentation[].class);
+        ResponseEntity<GroupDtoResponse[]> users = template.exchange(
+                base_url + "/auth/admin/realms/master/users/" + userId + "/groups",
+                HttpMethod.GET, httpEntity, GroupDtoResponse[].class);
 
         return users.getBody();
     }
@@ -176,7 +183,7 @@ public class UsersRepository {
 
         HttpEntity<?> httpEntity = new HttpEntity<>(headers);
         ResponseEntity<Void> res = template.exchange(
-                "http://localhost:28080/auth/admin/realms/master/users/" + userId + "/groups/" + groupId,
+                base_url + "/auth/admin/realms/master/users/" + userId + "/groups/" + groupId,
                 HttpMethod.PUT, httpEntity, Void.class);
 
         return res.getStatusCode().is2xxSuccessful();
@@ -189,7 +196,7 @@ public class UsersRepository {
 
         HttpEntity<?> httpEntity = new HttpEntity<>(headers);
         ResponseEntity<Void> res = template.exchange(
-                "http://localhost:28080/auth/admin/realms/master/users/" + userId + "/groups/" + groupId,
+                base_url + "/auth/admin/realms/master/users/" + userId + "/groups/" + groupId,
                 HttpMethod.DELETE, httpEntity, Void.class);
 
         return res.getStatusCode().is2xxSuccessful();

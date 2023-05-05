@@ -1,7 +1,7 @@
 package com.keycloak.auth.secureapp.repostitory;
 
-import com.keycloak.auth.secureapp.dto.LoginDTO;
-import com.keycloak.auth.secureapp.model.ResponseToken;
+import com.keycloak.auth.secureapp.dto.LoginDtoRequest;
+import com.keycloak.auth.secureapp.dto.TokenResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -28,8 +28,11 @@ public class PublicRepository {
     private String client_secret;
     @Value("${mykeycloak.grant-type}")
     private String grant_type;
+    @Value("${mykeycloak.base-url}")
+    private String base_url;
 
-    public Optional<ResponseToken> authenticate(LoginDTO loginDTO) {
+
+    public Optional<TokenResponse> authenticate(LoginDtoRequest loginDTO) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
@@ -43,9 +46,9 @@ public class PublicRepository {
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(userCredentials, headers);
 
         try {
-            ResponseEntity<ResponseToken> res = template.postForEntity(
-                    "http://localhost:28080/auth/realms/master/protocol/openid-connect/token",
-                    httpEntity, ResponseToken.class);
+            ResponseEntity<TokenResponse> res = template.postForEntity(
+                    base_url + "/realms/master/protocol/openid-connect/token",
+                    httpEntity, TokenResponse.class);
             return Optional.ofNullable(res.getBody());
         } catch (final HttpClientErrorException e) {
             return Optional.empty();

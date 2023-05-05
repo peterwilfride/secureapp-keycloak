@@ -1,6 +1,6 @@
 package com.keycloak.auth.secureapp.repostitory;
 
-import com.keycloak.auth.secureapp.model.ResponseToken;
+import com.keycloak.auth.secureapp.dto.TokenResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -24,6 +24,8 @@ public class AdminRepository {
     private String admin_client_secret;
     @Value("${mykeycloak.admin-grant-type}")
     private String admin_grant_type;
+    @Value("${mykeycloak.base-url}")
+    private String base_url;
 
     public String getAdminToken() {
         HttpHeaders headers = new HttpHeaders();
@@ -35,9 +37,9 @@ public class AdminRepository {
         credentials.add("grant_type", admin_grant_type);
 
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(credentials, headers);
-        ResponseEntity<ResponseToken> res = template.postForEntity(
-                "http://localhost:28080/auth/realms/master/protocol/openid-connect/token",
-                httpEntity, ResponseToken.class);
+        ResponseEntity<TokenResponse> res = template.postForEntity(
+                base_url + "/realms/master/protocol/openid-connect/token",
+                httpEntity, TokenResponse.class);
 
         return Objects.requireNonNull(res.getBody()).getAccess_token();
     }

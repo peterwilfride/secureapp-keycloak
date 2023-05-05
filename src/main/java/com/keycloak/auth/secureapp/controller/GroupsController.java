@@ -1,7 +1,7 @@
 package com.keycloak.auth.secureapp.controller;
 
-import com.keycloak.auth.secureapp.model.GroupRepresentation;
-import com.keycloak.auth.secureapp.model.UserRepresentationalResponse;
+import com.keycloak.auth.secureapp.dto.GroupDtoResponse;
+import com.keycloak.auth.secureapp.dto.UserRepresentationalResponse;
 import com.keycloak.auth.secureapp.service.GroupsService;
 import com.keycloak.auth.secureapp.utils.ValidatorUUID;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/admin/groups")
@@ -21,7 +20,7 @@ public class GroupsController {
     private final ValidatorUUID validatorUUID;
 
     @GetMapping
-    public GroupRepresentation[] getAllGroups() {
+    public GroupDtoResponse[] getAllGroups() {
         return service.getAllGroups();
     }
 

@@ -1,10 +1,12 @@
 package com.keycloak.auth.secureapp.service;
 
-import com.keycloak.auth.secureapp.dto.ChooseVinculoDTO;
-import com.keycloak.auth.secureapp.model.LogoutRequest;
-import com.keycloak.auth.secureapp.model.LogoutResponse;
-import com.keycloak.auth.secureapp.model.ResponseToken;
+import com.keycloak.auth.secureapp.dto.SetVinculoDtoRequest;
+import com.keycloak.auth.secureapp.dto.LogoutDtoRequest;
+import com.keycloak.auth.secureapp.dto.LogoutDtoResponse;
+import com.keycloak.auth.secureapp.dto.TokenResponse;
 import com.keycloak.auth.secureapp.repostitory.AuthRepository;
+import com.keycloak.auth.secureapp.utils.TokenDecoder;
+import com.keycloak.auth.secureapp.utils.TokenExtractor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -14,32 +16,45 @@ import java.util.Optional;
 public class AuthService {
     private final AuthRepository repository;
     private final UsersService usersService;
+    private final TokenExtractor tokenExtractor;
 
-    public AuthService(AuthRepository repository, UsersService usersService) {
+    public AuthService(AuthRepository repository, UsersService usersService, TokenExtractor tokenExtractor) {
         this.repository = repository;
         this.usersService = usersService;
+        this.tokenExtractor = tokenExtractor;
     }
-    String mockusername = "maria";
-    public ResponseEntity<LogoutResponse> logout(LogoutRequest logoutRequest) {
-        //TODO: a partir do token recuperar o user e resetar seu vinculo_id
+
+    //String mockusername = "maria";
+
+    public ResponseEntity<LogoutDtoResponse> logout(LogoutDtoRequest logoutRequest) {
+        String tokenStr = tokenExtractor.extractToken();
+        TokenDecoder decodeToken = TokenDecoder.getDecoded(tokenStr);
+        String username = decodeToken.preferred_username;
 
         // resetar um vinculo id basta passar valor -1 para ele
-        usersService.setVinculoId(-1L, mockusername);
+        usersService.setVinculoId(-1L, username);
 
         return repository.logout(logoutRequest);
     }
 
-    public Optional<ResponseToken> setVinculo(ChooseVinculoDTO chooseVinculoDTO) {
-        /* TODO: a partir do token recuperar o vinculo_id do user
-         * TODO: e validar se esta apto ou nao a gerar um conjunto de tokens
+    public Optional<TokenResponse> setVinculo(SetVinculoDtoRequest setVinculoDtoRequest) {
+        /* TODO: Validar se esta apto ou nao a gerar um conjunto de tokens
          * se vinculo_id esta ativo
          * se vinculo_id pertence ao username
          * se username com vinculo_id esta morto
          * */
 
-        Long vinculoId = chooseVinculoDTO.getVinculo_id();
-        usersService.setVinculoId(vinculoId, mockusername);
+        String tokenStr = tokenExtractor.extractToken();
+        TokenDecoder decodeToken = TokenDecoder.getDecoded(tokenStr);
+        String username = decodeToken.preferred_username;
 
-        return repository.setVinculo(chooseVinculoDTO);
+        Long vinculoId = setVinculoDtoRequest.getVinculo_id();
+        usersService.setVinculoId(vinculoId, username);
+
+        return repository.setVinculo(setVinculoDtoRequest);
+    }
+
+    public void getVinculos() {
+        // get vinculos
     }
 }
